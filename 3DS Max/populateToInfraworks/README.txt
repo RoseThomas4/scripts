@@ -1,4 +1,6 @@
 Open 3DS Max
 Create Populate Characters
-Export as DAE
+Run script
+Select Characters
+Export Selected as DAE
 Import into Infraworks
