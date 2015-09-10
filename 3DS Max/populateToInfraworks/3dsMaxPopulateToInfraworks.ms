@@ -34,11 +34,14 @@ Rollout Infraworks "Infraworks Character Exporter"
 						)
 						local kx = obj.pos.controller.x_position.keys[k].value
 						local ky = obj.pos.controller.y_position.keys[k].value
+						--kz += 3.3 --distance from hip to ankle
 						local targ = getnodebyname(Infraworks.btn_pick.text)
-						local z = moveroot [kx,ky,kz] targ
+						if targ != undefined then (
+							local z = moveroot [kx,ky,kz] targ
+						)
 						if z == false then continue
 						if (obj.pos.controller.z_position.controller.keys[k]) != undefined then (
-							obj.pos.controller.z_position.controller.keys[k].value = z
+							obj.pos.controller.z_position.controller.keys[k].value = (z + .02)
 							--format "END:%\n" z
 						)
 					)
@@ -92,11 +95,12 @@ fn cleanit = (
 	delarr = #()
 		for i in objects where i.isfrozen == false do append delarr i
 delete delarr
+		gc()
 )
 fn replacegeometry = (
 		local t = 1
 		local delarr = #()
-		for i in objects where i.isfrozen == false and classof i == Editable_mesh do append delarr i
+		for i in objects where i.modifiers.count == 1 and i.modifiers[1].name == "Skin" do append delarr i
 		delete delarr
 		delarr = #()
 		for i in objects where classof i == Dummy do append delarr i
@@ -142,9 +146,9 @@ fn replacegeometry = (
 				local bonePosKeys = c.pos.controller.keys
 					for k = 1 to bonePosKeys.count do(
 						addnewkey pointBone k
-						pointBone.pos.controller.x_position.keys[k].value = c.pos.controller.x_position.keys[k].value
-						pointBone.pos.controller.y_position.keys[k].value = c.pos.controller.y_position.keys[k].value
-						pointBone.pos.controller.z_position.keys[k].value = c.pos.controller.z_position.keys[k].value
+						pointBone.pos.controller.x_position.keys[k].value = c.pos[1]
+						pointBone.pos.controller.y_position.keys[k].value = c.pos[2]
+						pointBone.pos.controller.z_position.keys[k].value = c.pos[3]
 						
 						pointBone.rotation.controller.x_rotation.keys[k].value =  c.rotation.controller.x_rotation.keys[k].value
 						pointBone.rotation.controller.y_rotation.keys[k].value = c.rotation.controller.y_rotation.keys[k].value
@@ -162,6 +166,7 @@ fn replacegeometry = (
 					)
 				)
 				
+				
 			)
 		
 		)
@@ -172,14 +177,24 @@ fn replacegeometry = (
 )
 
 
-	group "Go?"
+group "Setup" (
+			checkbox chk_export "Export" align:#left
+			edittext txt_ext "Extension" text:"dae" align:#left width:105
+			--edittext txt_suf "Sufffix: *" text:"" tooltip:"Put your suffix here" align:#left width:105
+			edittext txt_dir "Directory" align:#left across:2 width:400 height:24
+			button btn_browse "..." align:#right width:20 
+)	
+group "Go?"
 		(
-			button btn_go "GO"
-			button btn_clean "Clean Scene"
-			pickbutton btn_pick "Pick terrain object"
-			button btn_unfreezeTerrain "Unfreeze/Freeze Terrain"
+			pickbutton btn_pick "Pick terrain object" align:#left
+			button btn_unfreezeTerrain "Unfreeze/Freeze Terrain" align:#left
+			button btn_go "GO" align:#left
 		)
-
+group "Cleanup"
+		(
+			label lbl_clean "Cleaning will delete all animated characters as well as some meshes" align:#left
+			button btn_clean "Clean Scene" align:#left
+		)
 	
 	on btn_unfreezeTerrain pressed do(
 		local t = getnodebyname(btn_pick.text)
@@ -200,7 +215,27 @@ fn replacegeometry = (
 			if lay.name == "terrain" then lay.addnode pickedObj
 		)
 	)
-	
+			on btn_browse pressed do
+		(
+			local fpath = getSavePath initialDir:@"C:\" caption:"Select any file in the source directory:" 
+			--shellLaunch "explorer.exe" (getdir #scene)
+			if fpath != undefined then
+			(
+			--local extension = txt_ext.text
+			--local pfix = if txt_pre.text == "" then pfix = "*" else pfix = txt_pre.text 
+			local thepath = fpath
+			--local dcount = (for f in getfiles (thepath) collect f).count
+			txt_dir.text = thepath + "\\PopToAIW_" + (random 1 10000) as string + ".dae"
+			/*
+				if dcount > 0 then 
+				(
+					lblNumFiles.text = dcount as string + " files will be imported"
+					txt_dir.text = fpath + "\\" + pfix + "." + extension 
+				)
+				*/
+			)
+			--btnUpdate.enabled = true
+		)
 	on btn_clean pressed do (
 		cleanit()
 	)
@@ -209,14 +244,20 @@ fn replacegeometry = (
 		clearlistener()
 		local t = getnodebyname(Infraworks.btn_pick.text)
 		if t != undefined then (
-			if t.isfrozen == false then t.isfrozen = true
+			--if t.isfrozen == false then t.isfrozen = true
 		)
 		replacegeometry()
+		if chk_export.checked == true then (
+			local bips = for o in objects where o.isfrozen == false and matchpattern o.name pattern:"*_Bip*" collect o
+			select bips
+			local filename = substituteString txt_dir.text "\\" "/"
+			exportFile fileName #noPrompt selectedOnly:True
+		)
 		gc()
 		--enableSceneRedraw()
 	)
 
 )
-createDialog Infraworks 160
---InfraChar=newrolloutfloater "PolyForm Infraworks Character Exporter" 400 150
+createDialog Infraworks 460 350
+--InfraChar=newrolloutfloater "PolyForm Infraworks Character Exporter" 250 125
 --addrollout Infraworks InfraChar  rolledUp:false
