@@ -181,19 +181,24 @@ group "Setup" (
 			checkbox chk_export "Export" align:#left
 			edittext txt_ext "Extension" text:"dae" align:#left width:105
 			--edittext txt_suf "Sufffix: *" text:"" tooltip:"Put your suffix here" align:#left width:105
-			edittext txt_dir "Directory" align:#left across:2 width:400 height:24
+			edittext txt_dir "Directory" align:#left across:2 width:400 height:24 text:((getdir #export) + "\\PopToAIW_" + (random 1 10000) as string + ".DAE")
 			button btn_browse "..." align:#right width:20 
 )	
-group "Go?"
+group "Terrain"
 		(
 			pickbutton btn_pick "Pick terrain object" align:#left
 			button btn_unfreezeTerrain "Unfreeze/Freeze Terrain" align:#left
-			button btn_go "GO" align:#left
 		)
+		
+group "Go"
+		(
+			button btn_go "GO" align:#center width:250 height:25
+		)
+		
 group "Cleanup"
 		(
-			label lbl_clean "Cleaning will delete all animated characters as well as some meshes" align:#left
-			button btn_clean "Clean Scene" align:#left
+			label lbl_clean "Cleaning will delete all animated characters as well as some meshes" align:#center
+			button btn_clean "Clean Scene" align:#center width:250 height:25
 		)
 	
 	on btn_unfreezeTerrain pressed do(
