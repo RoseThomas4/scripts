@@ -1,6 +1,5 @@
-# scripts
-A collection of my public maxscripts
-
+# Scripts
+Maxscripts
 -Populate Infraworks
 --Converts 3DS Max Populate Characters into animated Infraworks humanoid models
 -Polyform Importer
